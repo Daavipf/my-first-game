@@ -5,6 +5,8 @@ func get_facing(velocity: float):
 		flip_h = velocity < 0
 
 func update_animation(player: CharacterBody2D):
+	if player.has_method("is_dead") and player.is_dead: return
+	
 	if player.is_on_wall() and not player.is_on_floor():
 		if Global.unlocked_abilites["wall_jump"]:
 			play("wall_slide")
@@ -18,3 +20,13 @@ func update_animation(player: CharacterBody2D):
 			play("run")
 		else:
 			play("idle")
+
+func flash(duration: float):
+	var tween = create_tween().set_loops()
+	tween.tween_property(self, "modulate:a", 0.3, 0.1)
+	tween.tween_property(self, "modulate:a", 1.0, 0.1)
+	
+	await get_tree().create_timer(duration).timeout
+	
+	tween.kill()
+	modulate.a = 1.0

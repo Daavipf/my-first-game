@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://c8bjbi6s2dg02" path="res://Scripts/enemy.gd" id="1_0830c"]
 [ext_resource type="PackedScene" uid="uid://6i2m7s3q48jf" path="res://Scenes/health_component.tscn" id="2_287tu"]
 [ext_resource type="PackedScene" uid="uid://blhlkv3vq2k76" path="res://Scenes/hitbox.tscn" id="2_afpow"]
-[ext_resource type="Texture2D" uid="uid://c2gd4ef503np2" path="res://Assets/Pixel Adventure 1/Free/Items/Fruits/Collected.png" id="2_ghaa6"]
+[ext_resource type="Texture2D" uid="uid://cciliofc76l6m" path="res://Assets/Items/Fruits/Collected.png" id="2_ghaa6"]
 [ext_resource type="PackedScene" uid="uid://b4gko3pltavme" path="res://Scenes/hurtbox.tscn" id="4_0830c"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_1dp5w"]
@@ -100,10 +100,10 @@ position = Vector2(0, 2.5)
 shape = SubResource("RectangleShape2D_ghaa6")
 debug_color = Color(0.98048776, 0, 0.37298933, 0.41960785)
 
-[node name="Hurtbox" parent="." unique_id=793972873 node_paths=PackedStringArray("health_component") instance=ExtResource("4_0830c")]
+[node name="Hurtbox" parent="." unique_id=793972873 node_paths=PackedStringArray("entity") instance=ExtResource("4_0830c")]
 collision_layer = 32
 collision_mask = 4
-health_component = NodePath("../HealthComponent")
+entity = NodePath("..")
 
 [node name="EnemyHeadCollision" type="CollisionShape2D" parent="Hurtbox" unique_id=1706712098]
 position = Vector2(0, -62)

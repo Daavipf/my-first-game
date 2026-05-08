@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://8utijye3w40c"]
+
+[ext_resource type="Texture2D" uid="uid://bhg7yn845bhmc" path="res://Assets/Pixel Heart Animation GIFs & Spritesheets, 32x32 and 16x16/Pixel Heart Sprite Sheet 16x16.png" id="1_icnxf"]
+
+[node name="HeartGUI" type="TextureRect" unique_id=2100733123]
+offset_right = 40.0
+offset_bottom = 40.0
+texture = ExtResource("1_icnxf")
+stretch_mode = 5

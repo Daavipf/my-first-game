@@ -12,7 +12,6 @@ func _ready():
 func _on_body_entered(body):
 	if body.name == "Player":
 		set_deferred("monitoring", false)
-		# Encontra o GameController na cena (ou via Singleton se preferir)
 		var controller = get_tree().get_first_node_in_group("controller")
 		if controller:
 			controller.add_score(points_value)

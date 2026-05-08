@@ -1,15 +1,40 @@
 [gd_scene format=3 uid="uid://cchvddkpgcx1s"]
 
 [ext_resource type="Script" uid="uid://c622ooloqje5g" path="res://Scripts/player.gd" id="1_cvnsp"]
-[ext_resource type="Texture2D" uid="uid://42x4gko4bcq0" path="res://Assets/Pixel Adventure 1/Free/Main Characters/Ninja Frog/Idle (32x32).png" id="2_cvnsp"]
-[ext_resource type="Texture2D" uid="uid://drgheishqofhy" path="res://Assets/Pixel Adventure 1/Free/Main Characters/Ninja Frog/Fall (32x32).png" id="2_fkybt"]
-[ext_resource type="Texture2D" uid="uid://bw6q470g7cvvw" path="res://Assets/Pixel Adventure 1/Free/Main Characters/Ninja Frog/Run (32x32).png" id="3_6t5aa"]
+[ext_resource type="Texture2D" uid="uid://h3bk28kmdgp" path="res://Assets/Main Characters/Ninja Frog/Idle (32x32).png" id="2_cvnsp"]
+[ext_resource type="Texture2D" uid="uid://bj0htlkc0no3a" path="res://Assets/Main Characters/Ninja Frog/Fall (32x32).png" id="2_fkybt"]
+[ext_resource type="Texture2D" uid="uid://cciliofc76l6m" path="res://Assets/Items/Fruits/Collected.png" id="2_gymyn"]
+[ext_resource type="Texture2D" uid="uid://u7nk82ndpm70" path="res://Assets/Main Characters/Ninja Frog/Run (32x32).png" id="3_6t5aa"]
 [ext_resource type="Script" uid="uid://eaj3mq234umn" path="res://Scripts/player_animation.gd" id="4_vgqql"]
-[ext_resource type="Texture2D" uid="uid://bp4e8unop5o0f" path="res://Assets/Pixel Adventure 1/Free/Main Characters/Ninja Frog/Jump (32x32).png" id="4_x3wgy"]
-[ext_resource type="Texture2D" uid="uid://7frmrr6x351" path="res://Assets/Pixel Adventure 1/Free/Main Characters/Ninja Frog/Wall Jump (32x32).png" id="6_3smsa"]
+[ext_resource type="Texture2D" uid="uid://crk4qx2qdo3em" path="res://Assets/Main Characters/Ninja Frog/Jump (32x32).png" id="4_x3wgy"]
+[ext_resource type="Texture2D" uid="uid://eqfkdp3a1ron" path="res://Assets/Main Characters/Ninja Frog/Wall Jump (32x32).png" id="6_3smsa"]
 [ext_resource type="PackedScene" uid="uid://6i2m7s3q48jf" path="res://Scenes/health_component.tscn" id="8_8erm5"]
 [ext_resource type="PackedScene" uid="uid://b4gko3pltavme" path="res://Scenes/hurtbox.tscn" id="9_f1ek2"]
 [ext_resource type="PackedScene" uid="uid://blhlkv3vq2k76" path="res://Scenes/hitbox.tscn" id="10_tx1dd"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_36dho"]
+atlas = ExtResource("2_gymyn")
+region = Rect2(0, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yh6i2"]
+atlas = ExtResource("2_gymyn")
+region = Rect2(32, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_nv4vc"]
+atlas = ExtResource("2_gymyn")
+region = Rect2(64, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8gxox"]
+atlas = ExtResource("2_gymyn")
+region = Rect2(96, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_11gg7"]
+atlas = ExtResource("2_gymyn")
+region = Rect2(128, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qpa8y"]
+atlas = ExtResource("2_gymyn")
+region = Rect2(160, 0, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_0gysh"]
 atlas = ExtResource("2_fkybt")
@@ -135,6 +160,29 @@ region = Rect2(128, 0, 32, 32)
 animations = [{
 "frames": [{
 "duration": 1.0,
+"texture": SubResource("AtlasTexture_36dho")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yh6i2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_nv4vc")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8gxox")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_11gg7")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qpa8y")
+}],
+"loop": false,
+"name": &"die",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
 "texture": SubResource("AtlasTexture_0gysh")
 }],
 "loop": true,
@@ -258,11 +306,14 @@ size = Vector2(18, 2)
 
 [node name="Player" type="CharacterBody2D" unique_id=1448894676 groups=["Player"]]
 script = ExtResource("1_cvnsp")
+fall_damage_threshold = 900.0
+fall_damage_multiplier = 0.003
+knockback_force = Vector2(100, -200)
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1207694692]
 texture_filter = 1
 sprite_frames = SubResource("SpriteFrames_7dp3o")
-animation = &"fall"
+animation = &"die"
 script = ExtResource("4_vgqql")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=633341805]
@@ -272,10 +323,10 @@ shape = SubResource("CapsuleShape2D_cvnsp")
 [node name="HealthComponent" parent="." unique_id=1175494789 instance=ExtResource("8_8erm5")]
 max_health = 3.0
 
-[node name="Hurtbox" parent="." unique_id=793972873 node_paths=PackedStringArray("health_component") instance=ExtResource("9_f1ek2")]
+[node name="Hurtbox" parent="." unique_id=793972873 node_paths=PackedStringArray("entity") instance=ExtResource("9_f1ek2")]
 collision_layer = 2
 collision_mask = 16
-health_component = NodePath("../HealthComponent")
+entity = NodePath("..")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox" unique_id=1436393231]
 position = Vector2(0, 3)
