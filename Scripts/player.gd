@@ -16,6 +16,12 @@ extends CharacterBody2D
 @export var wall_jump_push = 400.0
 @export var wall_jump_lockout = 0.08
 @export var wall_slide_speed = 120
+@export var double_jump_speed: float = -350.0
+
+@export_category("Dash")
+@export var dash_speed: float = 600.0
+@export var dash_duration: float = 0.2
+@export var dash_cooldown: float = 0.6
 
 @export_category("Combat & Feedback")
 @export var fall_damage_threshold: float = 700.0
@@ -35,6 +41,12 @@ var is_stunned: bool = false
 var spawn_point: Vector2
 var is_dead: bool = false
 
+var is_dashing: bool = false
+var _dash_timer: float = 0.0
+var _dash_cooldown_timer: float = 0.0
+var _dash_direction: float = 1.0
+var _can_double_jump: bool = false
+
 func _ready() -> void:
 	spawn_point = global_position
 	health_component.died.connect(on_died)
@@ -43,16 +55,25 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if is_dead: return
 	
-	apply_gravity(delta)
-	handle_wall_slide()
 	update_timers(delta)
-	handle_jump()
-	handle_horizontal_movement(delta)
+	
+	handle_dash()
+	
+	if is_dashing:
+		velocity.x = _dash_direction * dash_speed
+		velocity.y = 0.0
+	else:
+		apply_gravity(delta)
+		handle_wall_slide()
+		handle_jump()
+		handle_horizontal_movement(delta)
 	
 	_pre_impact_velocity_y = velocity.y
 	move_and_slide()
 	
-	check_fall_damage()
+	if not is_dashing:
+		check_fall_damage()
+	
 	update_viuals()
 	was_on_floor = is_on_floor()
 
@@ -60,17 +81,27 @@ func apply_gravity(delta: float):
 	velocity.y += Global.gravity * delta
 
 func handle_wall_slide():
-	if is_on_wall() and Global.unlocked_abilites["wall_jump"]:
+	if is_on_wall() and Global.unlocked_abilities["wall_jump"]:
 		velocity.y = wall_slide_speed
 
 func update_timers(delta: float):
 	if _walljump_lock_movement_timer > 0: _walljump_lock_movement_timer -= delta
 	if _jump_buffer_timer > 0: _jump_buffer_timer -= delta
+	if _dash_cooldown_timer > 0: _dash_cooldown_timer -= delta
+	
+	if _dash_timer > 0:
+		_dash_timer -= delta
+		if _dash_timer <= 0:
+			is_dashing = false
 	
 	if is_on_floor():
 		_coyote_timer = coyote_time
-	elif _coyote_timer > 0:
-			_coyote_timer -= delta
+		_can_double_jump = true
+	else:
+		if is_on_wall():
+			_can_double_jump = true
+		if _coyote_timer > 0:
+				_coyote_timer -= delta
 
 func handle_jump():
 	if Input.is_action_just_pressed("ui_up"):
@@ -82,8 +113,11 @@ func handle_jump():
 	
 	if _coyote_timer > 0:
 		execute_jump()
-	elif is_on_wall() and Global.unlocked_abilites["wall_jump"]:
+	elif is_on_wall() and Global.unlocked_abilities["wall_jump"]:
 		execute_wall_jump()
+	elif _can_double_jump and Global.unlocked_abilities["double_jump"]:
+		execute_jump()
+		_can_double_jump = false
 
 func execute_jump():
 	velocity.y = jump_speed
@@ -95,6 +129,22 @@ func execute_wall_jump():
 	velocity.x = get_wall_normal().x * wall_jump_push
 	_walljump_lock_movement_timer = wall_jump_lockout
 	_jump_buffer_timer = 0.0
+
+func handle_dash():
+	if Input.is_action_just_pressed("dash") and Global.unlocked_abilities["dash"]:
+		if _dash_cooldown_timer <= 0 and not is_stunned and not is_dashing:
+			execute_dash()
+
+func execute_dash():
+	is_dashing = true
+	_dash_timer = dash_duration
+	_dash_cooldown_timer = dash_cooldown
+	
+	var input_direction = Input.get_axis("ui_left", "ui_right")
+	if input_direction != 0:
+		_dash_direction = input_direction
+	else:
+		_dash_direction = -1 if _animated_sprite.flip_h else 1
 
 func handle_horizontal_movement(delta: float):
 	var input_direction = Input.get_axis("ui_left", "ui_right")
@@ -111,24 +161,27 @@ func handle_horizontal_movement(delta: float):
 func check_fall_damage():
 	var just_landed = is_on_floor() and not was_on_floor
 	if just_landed and _pre_impact_velocity_y >= fall_damage_threshold:
-			var excess_speed = _pre_impact_velocity_y - fall_damage_threshold
-			var fall_damage = excess_speed * fall_damage_multiplier
-			take_damage(max(round(fall_damage), 1.0))
+		var excess_speed = _pre_impact_velocity_y - fall_damage_threshold
+		var fall_damage = excess_speed * fall_damage_multiplier
+		take_damage(max(round(fall_damage), 1.0))
 
 func update_viuals():
-	if not is_stunned:
+	if is_dead: return
+	if not is_stunned and not is_dashing:
 		_animated_sprite.get_facing(velocity.x)
 	_animated_sprite.update_animation(self)
 
 func take_damage(amount: float, damage_source_x: float = global_position.x):
-	if is_invincible: return
+	if is_invincible or is_dead: return
 	
 	health_component.take_damage(amount)
 	apply_knockback(damage_source_x)
 	trigger_invincibility()
 
 func apply_knockback(damage_source_x: float):
+	if is_dead: return
 	is_stunned = true
+	is_dashing = false
 	velocity.y = knockback_force.y
 	var push_direction = -1 if damage_source_x > global_position.x else 1
 	if damage_source_x == global_position.x:
@@ -137,6 +190,7 @@ func apply_knockback(damage_source_x: float):
 	get_tree().create_timer(stun_duration).timeout.connect(func(): is_stunned = false)
 
 func trigger_invincibility():
+	if is_dead: return
 	is_invincible = true
 	_animated_sprite.flash(invincibility_duration)
 	get_tree().create_timer(invincibility_duration).timeout.connect(func(): is_invincible = false)
@@ -144,6 +198,7 @@ func trigger_invincibility():
 func on_died():
 	if is_dead: return
 	is_dead = true
+	is_dashing = false
 	velocity = Vector2.ZERO
 	_animated_sprite.play("die")
 	

@@ -8,7 +8,7 @@ func update_animation(player: CharacterBody2D):
 	if player.has_method("is_dead") and player.is_dead: return
 	
 	if player.is_on_wall() and not player.is_on_floor():
-		if Global.unlocked_abilites["wall_jump"]:
+		if Global.unlocked_abilities["wall_jump"]:
 			play("wall_slide")
 	elif not player.is_on_floor():
 		if player.velocity.y > 0:
